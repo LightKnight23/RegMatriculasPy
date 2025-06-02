@@ -1,40 +1,57 @@
-import time                                                                         #Importamos el modulo "time" para pausar la ejecución del código unos segundos, para simular que se están procesando los datod introducidos
-import re                                                                           #Importamos el modulo "re" para poder hacer uso del RegEx, que viene de Regular Expresions (Expresiones Regulares en español)
-import Modulos as mod                                                               #Importamos el modulo llamado curiosamente "Modulos" y lo renombramos como mod, para no tener que escribir Modulos a cada rato, además de que noa ahorra un pocode tiempo al escribir
+"""
+RegMatriculasPy - License Plate Validator for Panama Vehicles
+This module validates Panamanian license plates and identifies the vehicle type.
+"""
 
-placa = input("Introduzca un numero de matricula: ")                                #Introducción de datos por teclado
+import re
+from typing import Optional
+import Modulos as mod
+from vehicle_types import VehicleType
 
-n_placa = placa                                                                     #Aqui hacemos que la variable "n_placa" tenga el mismo valor de la variable "placa" para poder hacer un burn uso del numero de matricula mas adelante en el programa
+def validate_license_plate(plate: str) -> tuple[bool, Optional[VehicleType]]:
+    """
+    Validate a Panamanian license plate and return its vehicle type.
+    
+    Args:
+        plate: The license plate number to validate
+        
+    Returns:
+        A tuple containing (is_valid, vehicle_type)
+        where is_valid is a boolean and vehicle_type is an optional VehicleType
+    """
+    patterns = {
+        r'T[0-9]{5}$': VehicleType.TAXI,
+        r'B[0-9]{5}$': VehicleType.BUS,
+        r'MB[0-9]{4}$': VehicleType.METROBUS,
+        r'PR[0-9]{4}$': VehicleType.PRESS,
+        r'E[0-9]{5}$': VehicleType.JUDGE,
+        r'CP[0-9]{4}$': VehicleType.PANAMA_CANAL,
+        r'HP[0-9]{4}$': VehicleType.RADIO_AMATEUR,
+        r'CC[0-9]{4}$': VehicleType.CONSULAR,
+        r'6H[0-9]{4}$': VehicleType.HONORARY,
+        r'MI[0-9]{4}$': VehicleType.INTERNATIONAL,
+        r'RI[0-9]{4}$': VehicleType.INTERNAL_ROUTE,
+        r'[A-C][A-Z][0-9]{4}$': VehicleType.PRIVATE,
+        r'MA[0-9]{4}$': VehicleType.MOTORCYCLE,
+        r'[0-9]{6}$': VehicleType.PRE_2013
+    }
+    
+    for pattern, vehicle_type in patterns.items():
+        if re.match(pattern, plate):
+            return True, vehicle_type
+            
+    return False, None
 
-time.sleep(2.375)                                                                   #Aqui pausamos la ejecución del programa por 2.375 segundos
+def main() -> None:
+    """Main function to run the license plate validation program."""
+    plate = input("Introduzca un numero de matricula: ").strip().upper()
 
-if re.match('T[0-9]{5}$', placa):                                                   #A partir de esta línea(línea 11) empezamos a usar la variable "placa", para que el programa pueda hacer la comparación entre lo que introducimos por teclaado y las diferentes sentencias escritas en el programa
-    print(mod.mensaje().format(n_placa), "Taxi.")                                   #Aqui usamos la variable "n_placa" para poder mostrarle en un mensaje al usuario mostrando los datos que introdujo el usuario(en este caso, el numero de matricula) por pantalla, además hacemos el uso de la función "mensaje()"
-elif re.match('B[0-9]{5}$', placa):
-    print(mod.mensaje().format(n_placa), "Buses.")
-elif re.match('MB[0-9]{4}$', placa):
-    print(mod.mensaje().format(n_placa), "Metrobus.")
-elif re.match('PR[0-9]{4}$', placa):
-    print(mod.mensaje().format(n_placa), "Prensa")
-elif re.match('E[0-9]{5}$', placa):
-    print(mod.mensaje().format(n_placa), "Jueces/Fiscales")
-elif re.match('CP[0-9]{4}$', placa):
-    print(mod.mensaje().format(n_placa), "Canal de Panama")
-elif re.match('HP[0-9]{4}$', placa):
-    print(mod.mensaje().format(n_placa), "Radioaficionado")
-elif re.match('CC[0-9]{4}$', placa):
-    print(mod.mensaje().format(n_placa), "Cuerpo Consular")
-elif re.match('6H[0-9]{4}$', placa):
-    print(mod.mensaje().format(n_placa), "Cuerpo Honorario")
-elif re.match('MI[0-9]{4}$', placa):
-    print(mod.mensaje().format(n_placa), "Mision Internacional")
-elif re.match('RI[0-9]{4}$', placa):
-    print(mod.mensaje().format(n_placa), "Ruta Interna")
-elif re.match('[A-C][A-Z][0-9]{4}$', placa):
-    print(mod.mensaje().format(n_placa), "Vehiculos particulares")
-elif re.match('MA[0-9]{4}$', placa):
-    print(mod.mensaje().format(n_placa), "Motos")
-elif re.match('[0-9]{6}$', placa):
-    print(mod.mensaje().format(n_placa), "vehiculos normales(antes del 2013)")
-else:
-    print(mod.error().format(n_placa))                                             #Aqui también usamos la variable "n_placa", esta vez usando la función "error()" que retorna un mensaje de error al introducir un número de matrícula no valido/incorrecto
+    is_valid, vehicle_type = validate_license_plate(plate)
+    
+    if is_valid and vehicle_type:
+        print(mod.mensaje().format(plate), vehicle_type.value)
+    else:
+        print(mod.error().format(plate))
+
+if __name__ == "__main__":
+    main()
